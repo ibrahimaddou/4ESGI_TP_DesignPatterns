@@ -57,6 +57,16 @@ public:
 
     IParticleFlyweight* creationFlyweight(const std::string& flyParCle)
     {
+        //si le  flyweight existe déjà
+        for (size_t i = 0; i < cles.size(); i++)
+        {
+            if (cles[i] == flyParCle)
+            {
+                std::cout << "reutilisation de flyweight : " << flyParCle << "\n";
+                return flyweights[i];
+            }
+        }
+
         std::cout << "Creation de flyweight\n";
         IParticleFlyweight* nvFlyweight = new ParticleFlyweight(flyParCle);
 
@@ -81,8 +91,12 @@ int main()
 {
     FlyweightFactory* fwFactory = FlyweightFactory::recupereInstance();
 
-    IParticleFlyweight* flyweight = fwFactory->creationFlyweight("test de creation de flyweight");
+    IParticleFlyweight* flyweight = fwFactory->creationFlyweight("flyweight1");
     flyweight->afficher();
+
+    //exemple si le flyweight existe déjà
+    IParticleFlyweight* fw2 = fwFactory->creationFlyweight("flyweight1");
+    fw2->afficher();
 
     delete fwFactory;
 
