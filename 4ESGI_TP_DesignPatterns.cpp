@@ -240,6 +240,107 @@ public:
     }
 };
 
+//particule qui va englober tout
+class Particle
+{
+private:
+    IParticlePrototype* prototype;
+    IParticleFlyweight* flyweight; //partagée
+    float x, y;
+    float vitX, vitY;
+
+public:
+    Particle(IParticlePrototype* proto, IParticleFlyweight* fly, float x, float y, float vitX, float vitY)
+    {
+        this->prototype = proto;
+        this->flyweight = fly;
+        this->x = x;
+        this->y = y;
+        this->vitX = vitX;
+        this->vitY = vitY;
+    }
+
+    ~Particle()
+    {
+        delete prototype; 
+    }
+
+    void afficher()
+    {
+        std::cout << "Particule a la position : "<<x<<","<<y<<" avec vitX/vitY :"<<vitX<< "/"<<vitY<<"\n";
+        prototype->afficher();
+        flyweight->afficher();
+    }
+};
+
+class Explosion
+{
+private:
+    std::vector<Particle*> particules;
+
+public:
+    void ajouterParticule(Particle* p)
+    {
+        particules.push_back(p);
+    }
+
+    void render()
+    {
+        std::cout << "Explosion avec : "<<particules.size()<< " particules\n";
+        for (size_t i = 0; i < particules.size(); i++)
+        {
+            particules[i]->afficher();
+        }
+    }
+
+    ~Explosion()
+    {
+        for (size_t i = 0; i < particules.size(); i++)
+        {
+            delete particules[i];
+        }
+    }
+};
+
+class IExplosionFactory
+{
+public:
+    virtual Explosion* createExplosion(ExplosionConfig* config) = 0;
+    virtual ~IExplosionFactory() = default;
+};
+
+//factory concret pour créer une explosion complete
+class ExplosionFactory : public IExplosionFactory
+{
+public:
+    Explosion* createExplosion(ExplosionConfig* config) override
+    {
+        Explosion* explosion = new Explosion();
+
+        FlyweightFactory* fwFactory = FlyweightFactory::recupereInstance();
+        IParticleFlyweight* flyweight = fwFactory->creationFlyweight(config->recupereCouleur());
+        ParticlePrototype pp(1.0f, config->recupereCouleur(), 10.0f);
+
+        int nombre = config->recupereNombre();
+        float spread = config->recupereSpread();
+
+        for (int i = 0; i < nombre; i++)
+        {
+            IParticlePrototype* ppClone = pp.clone();
+
+            //vitesse aleatoire
+            float vitX = spread * (0.5f - ((i % 3) * 0.20f)); 
+            float vitY = spread * (0.5f - ((i % 2) * 0.30f));
+
+            Particle* nvParticule = new Particle(ppClone, flyweight, config->recupereX(), config->recupereY(), vitX, vitY);
+            
+            explosion->ajouterParticule(nvParticule);
+        }
+
+        return explosion;
+    }
+};
+
 int main()
 {
     FlyweightFactory* fwFactory = FlyweightFactory::recupereInstance();
@@ -273,12 +374,20 @@ int main()
     ppClone1->afficher();
     ppClone2->afficher();
 
+    std::cout << "test de la factory : \n";
+    IExplosionFactory* fExplosion = new ExplosionFactory();
+    Explosion* testExplosion = fExplosion->createExplosion(config);
+    testExplosion->render();
+
     delete fwFactory;
     delete objBuilder;
     delete config;
     delete pp;
     delete ppClone1;
     delete ppClone2;
+    delete fExplosion;
+    delete testExplosion;
+    delete FlyweightFactory::recupereInstance();
 
     return 0;
 }
