@@ -103,7 +103,7 @@ public:
         this->x = x;
         this->y = y;
         this->couleur = couleur;
-        this->nombre = nombre = nombre;
+        this->nombre = nombre;
         this->spread = spread;
         this->dureeDeVie = dureeDeVie;
     }
@@ -180,6 +180,66 @@ public:
     }
 };
 
+class ExplosionBuilder
+{
+private:
+    float x;
+    float y;
+    std::string couleur;
+    int nombre;
+    float spread;
+    float dureeDeVie;
+
+public:
+    ExplosionBuilder()
+    {
+        //initialisation avec des valeurs par défaut
+        this->x = 0.0f;
+        this->y = 0.0f;
+        this->couleur = "Blanc";
+        this->nombre = 0;
+        this->spread = 0.0f;
+        this->dureeDeVie = 0.0f;
+    }
+
+    ExplosionBuilder* withPosition(float x, float y)
+    {
+        this->x = x;
+        this->y = y;
+        return this;
+    }
+
+    ExplosionBuilder* withColor(std::string couleur)
+    {
+        this->couleur = couleur;
+        return this;
+    }
+
+    ExplosionBuilder* withCount(int nombre)
+    {
+        this->nombre = nombre;
+        return this;
+    }
+
+    ExplosionBuilder* withSpread(float spread)
+    {
+        this->spread = spread;
+        return this;
+    }
+
+    ExplosionBuilder* withLifetime(float dureeDeVie)
+    {
+        this->dureeDeVie = dureeDeVie;
+        return this;
+    }
+
+    //création et build de l'objet
+    ExplosionConfig* build()
+    {
+        return new ExplosionConfig(this->x, this->y, this->couleur, this->nombre, this->spread, this->dureeDeVie);
+    }
+};
+
 int main()
 {
     FlyweightFactory* fwFactory = FlyweightFactory::recupereInstance();
@@ -190,8 +250,17 @@ int main()
     //exemple si le flyweight existe déjà
     IParticleFlyweight* fw2 = fwFactory->creationFlyweight("flyweight1");
     fw2->afficher();
+    
+    //utilisation de la pattern builder pour créer un objet
+    std::cout << "creation de l'objet avec Builder : \n";
+    ExplosionBuilder* objBuilder = new ExplosionBuilder();
+    ExplosionConfig* config = objBuilder->withPosition(10.0f, 20.0f)
+                              ->withColor("rouge")
+                              ->withCount(10)
+                              ->withSpread(20.0f)
+                              ->withLifetime(5.0f)
+                            ->build();
 
-    ExplosionConfig* config = new ExplosionConfig(10.0f, 20.0f, "rouge", 10, 20.0f, 5.0f);
     config->afficherConfig();
 
     std::cout << "creation du prototype : \n";
@@ -205,6 +274,7 @@ int main()
     ppClone2->afficher();
 
     delete fwFactory;
+    delete objBuilder;
     delete config;
     delete pp;
     delete ppClone1;
