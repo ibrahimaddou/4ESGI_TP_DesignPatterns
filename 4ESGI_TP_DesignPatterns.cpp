@@ -341,6 +341,55 @@ public:
     }
 };
 
+//proxy
+class ExplosionCacheProxy : public IExplosionFactory
+{
+private:
+    ExplosionFactory* ef;
+    std::vector<ExplosionConfig*> cacheDesConfigs;
+    std::vector<Explosion*> cacheDesExplosions;
+
+public:
+    ExplosionCacheProxy()
+    {
+        ef = new ExplosionFactory();
+    }
+
+    ~ExplosionCacheProxy()
+    {
+        delete ef;
+        //pour nettoyer les explosions
+        for (size_t i = 0; i < cacheDesExplosions.size(); i++)
+        {
+            delete cacheDesExplosions[i];
+        }
+    }
+
+    Explosion* createExplosion(ExplosionConfig* config) override
+    {
+        //les configs en memoire
+        for (size_t i = 0; i < cacheDesConfigs.size(); i++)
+        {
+            if (cacheDesConfigs[i]->recupereCouleur() == config->recupereCouleur() &&
+                cacheDesConfigs[i]->recupereNombre() == config->recupereNombre())
+            {
+                std::cout << "explosion deja en memoire\n";
+                return cacheDesExplosions[i];
+            }
+        }
+
+        //sinon
+        std::cout << "delegation au factory\n";
+        Explosion* nvExplosion = ef->createExplosion(config);
+
+        //enregistre le cache
+        cacheDesConfigs.push_back(config);
+        cacheDesExplosions.push_back(nvExplosion);
+
+        return nvExplosion;
+    }
+};
+
 int main()
 {
     FlyweightFactory* fwFactory = FlyweightFactory::recupereInstance();
@@ -379,6 +428,17 @@ int main()
     Explosion* testExplosion = fExplosion->createExplosion(config);
     testExplosion->render();
 
+    std::cout << "\ntest proxy : \n";
+    IExplosionFactory* fProxy = new ExplosionCacheProxy();
+    
+    std::cout << "demande d'explosion :\n";
+    Explosion* explosion1 = fProxy->createExplosion(config);
+    explosion1->render();
+
+    std::cout << "demande d explosion avec les memes configs :\n";
+    Explosion* explosion2 = fProxy->createExplosion(config);
+    explosion2->render();
+
     delete fwFactory;
     delete objBuilder;
     delete config;
@@ -388,6 +448,7 @@ int main()
     delete fExplosion;
     delete testExplosion;
     delete FlyweightFactory::recupereInstance();
+    delete fProxy;
 
     return 0;
 }
