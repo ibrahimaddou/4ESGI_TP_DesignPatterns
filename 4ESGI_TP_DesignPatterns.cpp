@@ -402,7 +402,7 @@ int main()
     fw2->afficher();
     
     //utilisation de la pattern builder pour créer un objet
-    std::cout << "creation de l'objet avec Builder : \n";
+    std::cout << "\n---Testcreation de l'objet avec Builder : \n";
     ExplosionBuilder* objBuilder = new ExplosionBuilder();
     ExplosionConfig* config = objBuilder->withPosition(10.0f, 20.0f)
                               ->withColor("rouge")
@@ -413,22 +413,22 @@ int main()
 
     config->afficherConfig();
 
-    std::cout << "creation du prototype : \n";
+    std::cout << "\n---Test creation du prototype : \n";
     IParticlePrototype* pp = new ParticlePrototype(2.5f, config->recupereCouleur(), 15.0f);
     pp->afficher();
 
-    std::cout << "test clone prototype pour l'explosion : \n";
+    std::cout << "\n---Test clone prototype pour l'explosion : \n";
     IParticlePrototype* ppClone1 = pp->clone();
     IParticlePrototype* ppClone2 = pp->clone();
     ppClone1->afficher();
     ppClone2->afficher();
 
-    std::cout << "test de la factory : \n";
+    std::cout << "\n---Test de la factory : \n";
     IExplosionFactory* fExplosion = new ExplosionFactory();
     Explosion* testExplosion = fExplosion->createExplosion(config);
     testExplosion->render();
 
-    std::cout << "\ntest proxy : \n";
+    std::cout << "\n---Test proxy : \n";
     IExplosionFactory* fProxy = new ExplosionCacheProxy();
     
     std::cout << "demande d'explosion :\n";
