@@ -38,11 +38,21 @@ class FlyweightFactory
 private:
     std::vector<std::string> cles;
     std::vector<IParticleFlyweight*> flyweights;
-
-public:
+    static FlyweightFactory* instance;
     FlyweightFactory()
     {
         std::cout << "initialisation.\n";
+    }
+
+public:
+    
+    static FlyweightFactory* recupereInstance()
+    {
+        if (instance == nullptr)
+        {
+            instance = new FlyweightFactory();
+        }
+        return instance;
     }
 
     IParticleFlyweight* creationFlyweight(const std::string& flyParCle)
@@ -65,10 +75,11 @@ public:
     }
 };
 
+FlyweightFactory* FlyweightFactory::instance = nullptr;
 
 int main()
 {
-    FlyweightFactory* fwFactory = new FlyweightFactory();
+    FlyweightFactory* fwFactory = FlyweightFactory::recupereInstance();
 
     IParticleFlyweight* flyweight = fwFactory->creationFlyweight("test de creation de flyweight");
     flyweight->afficher();
